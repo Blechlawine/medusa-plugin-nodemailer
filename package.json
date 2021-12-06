@@ -1,7 +1,7 @@
 {
     "name": "medusa-plugin-nodemailer",
     "version": "0.1.0",
-    "description": "",
+    "description": "A notification service based on nodemailer for medusajs",
     "main": "index.js",
     "repository": {
         "type": "git",
