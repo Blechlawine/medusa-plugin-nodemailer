@@ -5,7 +5,7 @@ import Email from "email-templates";
 class NodemailerService extends NotificationService {
     static identifier = "nodemailer";
 
-    constructor({ orderService, cartService }, config) {
+    constructor({ orderService, cartService, inviteService, swapService }, config) {
         super();
 
         this.config = {
@@ -23,6 +23,8 @@ class NodemailerService extends NotificationService {
         };
         this.orderService = orderService;
         this.cartService = cartService;
+        this.inviteService = inviteService;
+        this.swapService = swapService;
 
         this.transporter = nodemailer.createTransport(this.config.transport);
     }
@@ -106,29 +108,65 @@ class NodemailerService extends NotificationService {
     async retrieveData(eventName, eventData) {
         let sendData;
         let registeredEvent = this.config.templateMap[eventName];
+        let eventType = eventName.split(".")[0];
         if (!registeredEvent) {
             return false;
         } else {
-            sendData = await this.orderService.retrieve(eventData.id, {
-                select: ["shipping_total", "tax_total", "subtotal", "total"],
-                relations: [
-                    "customer",
-                    "billing_address",
-                    "shipping_address",
-                    "discounts",
-                    "discounts.rule",
-                    "discounts.rule.valid_for",
-                    "shipping_methods",
-                    "shipping_methods.shipping_option",
-                    "payments",
-                    "fulfillments",
-                    "fulfillments.tracking_links",
-                    "returns",
-                    "gift_cards",
-                    "gift_card_transactions",
-                    "items",
-                ],
-            });
+            switch (eventType) {
+                case "order":
+                    sendData = await this.orderService.retrieve(eventData.id, {
+                        select: ["shipping_total", "tax_total", "subtotal", "total"],
+                        relations: [
+                            "customer",
+                            "billing_address",
+                            "shipping_address",
+                            "discounts",
+                            "discounts.rule",
+                            "discounts.rule.valid_for",
+                            "shipping_methods",
+                            "shipping_methods.shipping_option",
+                            "payments",
+                            "fulfillments",
+                            "fulfillments.tracking_links",
+                            "returns",
+                            "gift_cards",
+                            "gift_card_transactions",
+                            "items",
+                        ],
+                    });
+                    break;
+                case "invite":
+                    sendData = await this.inviteService.list(
+                        {
+                            id: eventData.id,
+                        },
+                        {}
+                    )[0];
+                    return {
+                        to: sendData.user_email,
+                        data: sendData,
+                    };
+                case "swap":
+                    sendData = await this.swapService.retrieve(eventData.id, {
+                        relations: [
+                            "additional_items",
+                            "return_order",
+                            "return_order.items",
+                            "return_order.items.item",
+                            "return_order.shipping_method",
+                            "return_order.shipping_method.shipping_option",
+                        ],
+                    });
+                    break;
+                case "user":
+                    console.log("INFO: user-related event notifications are currently not supported.");
+                    // TODO: fetch user data
+                    break;
+                case "customer":
+                    console.log("INFO: customer related event notifications are currently not supported.");
+                    // TODO: fetch customer data
+                    break;
+            }
             return {
                 to: sendData.email,
                 data: sendData,
