@@ -141,10 +141,10 @@ class NodemailerService extends NotificationService {
                             id: eventData.id,
                         },
                         {}
-                    )[0];
+                    );
                     return {
-                        to: sendData.user_email,
-                        data: sendData,
+                        to: sendData[0].user_email,
+                        data: sendData[0],
                     };
                 case "swap":
                     sendData = await this.swapService.retrieve(eventData.id, {
