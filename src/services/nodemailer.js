@@ -51,6 +51,7 @@ class NodemailerService extends NotificationService {
                     },
                     locals: {
                         data: emailData.data,
+                        env: process.env,
                     },
                 })
                 .then(() => "sent")
@@ -87,6 +88,7 @@ class NodemailerService extends NotificationService {
                     },
                     locals: {
                         data: notification.data,
+                        env: process.env,
                     },
                 })
                 .then(() => "sent")
