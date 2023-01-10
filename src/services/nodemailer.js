@@ -41,6 +41,7 @@ class NodemailerService extends NotificationService {
                 views: {
                     root: this.config.emailTemplatePath,
                 },
+                i18n: this.config.i18n,
                 send: true,
             });
             const status = await email

@@ -40,5 +40,8 @@ It uses the email-templates npm package and pug for rendering html emails. Docum
         // "eventname": "templatename",
         "order.placed": "orderplaced",
     },
+    i18n: {
+        // See https://github.com/ladjs/i18n#options for i18n configuration
+    },
 }
 ```
